@@ -86,8 +86,6 @@ void Cube::setLayer(byte layer){
 }
 
 void Cube::writeLayer(){
-  //Ensure the layer is activated
-  setLayer(currentLayer);
   //Loop through all 8 bytes
   for(byte col = 0; col < 8; col++){
     //Each bit in the byte has to be loaded into the shift registers in order
@@ -100,6 +98,20 @@ void Cube::writeLayer(){
       //Now clock our shift registers
       clk();
     }
+  }
+}
+
+void Cube::pushToOutput(){
+  //I am not sure what pins control the output and how they control the output at this time
+  //Before this code is tested, this will have to be implemented
+}
+
+void Cube::writeCube(){
+  //Loop through each layer, write to the layer, and push to the output.
+  for(int layer = 0; layer < 8; layer++){
+    setLayer(layer);
+    writeLayer();
+    pushToOutput();
   }
 }
 
