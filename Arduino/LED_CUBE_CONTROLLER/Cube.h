@@ -8,9 +8,9 @@
  * PORTB
  * PIN 8, DATA
  * PIN 9, CLOCK
- * PIN 10, RESET
- * PIN 11, LATCH
- * PIN 12, ADLATCH
+ * PIN 10, Reset Active Low
+ * PIN 11, Storage Register Clock Input/Output Enable Active Low
+ * PIN 12, Layer Enable Active High
  * 
  * PORTC
  * ANALOG0, AD1 
@@ -37,11 +37,12 @@ class Cube{
     void writeCube();//Writes the current cube data to all layers of the cube.
     byte setBit(byte b, byte bitLocation, byte state);
 
+    byte **CUBE_DATA;//Pointer CUBE_DATA holds the state of every LED
+    
   private:
-    //Pointer CUBE_DATA holds the state of every LED
-    byte **CUBE_DATA;
+    
     //These hold the state of portB and PortC
-    byte PORTB_state = B00000110;//Data low, Clock high, Reset high, latch low, Adlatch low
+    byte PORTB_state = B0000000;//Initialize all to low
     byte PORTC_state = 0;//Initialized to ON
     byte currentLayer = 0;//Initialized to first layer
 };

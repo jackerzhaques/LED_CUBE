@@ -5,9 +5,9 @@
  * PORTB
  * PIN 8, DATA
  * PIN 9, CLOCK
- * PIN 10, RESET
- * PIN 11, LATCH
- * PIN 12, ADLATCH
+ * PIN 10, Reset Active Low
+ * PIN 11, Storage Register Clock Input/Output Enable Active Low
+ * PIN 12, Layer Enable Active High
  * 
  * PORTC
  * ANALOG0, AD1 
@@ -38,20 +38,16 @@ Cube::Cube(){
 
 void Cube::resetCube(){
   //First set the clear pin to 0, clears all shift registers
-  PORTB_state = setBit(PORTB_state, 3, 0);//Set bit 3 (RESET) to 0, leave all other bits
+  bitClear(PORTB_state, 2);//PORTB_state = setBit(PORTB_state, 3, 0);//Set bit 3 (RESET) to 0, leave all other bits
   PORTB = PORTB_state;//Now write the port state to the output registers
-  //Now default the clear pin to 1 so it is ready for the next clear
-  PORTB_state = setBit(PORTB_state, 3, 1);//Set bit 3 (RESET) to 1, leave all other bits.
+  //Now reset the clear pin to HIGH
+  bitSet(PORTB_state, 2);//PORTB_state = setBit(PORTB_state, 3, 1);//Set bit 3 (RESET) to 1, leave all other bits.
   PORTB = PORTB_state;//Write the state to the output registers.
 
-  //Now to ensure the LEDs show nothing, we will write both the latch (bit 4) and AD latch (bit 5) from low-to-high
-  PORTB_state = setBit(PORTB_state, 4, 0);//Set the state of LATCH to low
-  PORTB = PORTB_state;//Write LATCH low
-  PORTB_state = setBit(PORTB_state, 4, 1);//Set the state of LATCH to high
-  PORTB_state = setBit(PORTB_state, 5, 0);//Set the state of ADLATCH to low
-  PORTB = PORTB_state;//Write LATCH high and ADLATCH low
-  PORTB_state = setBit(PORTB_state, 5, 1);//Set the state of ADLATCH to high
-  PORTB = PORTB_state;//Write ADLATCH high
+  //Now to ensure the LEDs show nothing, we will write both the outpet enable (bit 4) and layer enable (bit 5) to HIGH and LOW
+  bitSet(PORTB_state, 3);//PORTB_state = setBit(PORTB_state, 4, 1);//Set the state of LATCH to low
+  bitClear(PORTB_state, 5);//PORTB_state = setBit(PORTB_state, 5, 0);
+  PORTB = PORTB_state;//Write the outputs
 }
 
 byte Cube::setBit(byte b, byte bitLocation, byte state){
@@ -64,13 +60,13 @@ void Cube::clk(){
   //Clock pin is 9, so bit is 1
   //Clock is falling edge trigger
   //So first we make sure the clock is high
-  PORTB_state = setBit(PORTB_state, 1, 1);
+  bitSet(PORTB_state, 1);//PORTB_state = setBit(PORTB_state, 1, 1);
   PORTB = PORTB_state;//Write our state to the port
   //Now trigger the clock (set to 0)
-  PORTB_state = setBit(PORTB_state, 1, 0);
+  bitClear(PORTB_state, 1);//PORTB_state = setBit(PORTB_state, 1, 0);
   PORTB = PORTB_state;//Write our state to the port.
   //Now preset the pin to HIGH again
-  PORTB_state = setBit(PORTB_state, 1, 1);
+  bitSet(PORTB_state, 1);//PORTB_state = setBit(PORTB_state, 1, 1);
   PORTB = PORTB_state;//Write our state to the port.
 }
 
@@ -102,8 +98,14 @@ void Cube::writeLayer(){
 }
 
 void Cube::pushToOutput(){
-  //I am not sure what pins control the output and how they control the output at this time
-  //Before this code is tested, this will have to be implemented
+  //Shift the outputs from the storage register to the output register
+  //Output register clock is bit 4
+  //Decoder enable pin is bit 5
+  bitClear(PORTB_state,3);//PORTB_state = setBit(PORTB_state, 4, 1);
+  PORTB = PORTB_state;
+  bitSet(PORTB_state,3);//PORTB_state = setBit(PORTB_state, 4, 0);
+  bitSet(PORTB_state,4);//PORTB_state = setBit(PORTB_state, 5, 1);
+  PORTB = PORTB_state;
 }
 
 void Cube::writeCube(){
